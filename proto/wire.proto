@@ -1,0 +1,33 @@
+syntax = "proto2";
+
+package zetasketch_clickhouse.wire;
+
+// prost-build does not support proto2 `extend`, so this file re-declares the
+// two zetasketch messages we need to parse as plain (non-extension) fields
+// at the *same field numbers and wire types* as the originals. The wire
+// format is byte-identical either way: proto2 extensions and regular fields
+// with the same number and type are indistinguishable on the wire.
+//
+// Field-for-field sources of truth:
+//   * hllplus-unique.proto (verbatim upstream copy, next to this file)
+//   * https://github.com/google/zetasketch/blob/master/proto/aggregator.proto
+//
+// See docs/format-reference.md for the full derivation.
+
+// Mirrors zetasketch.AggregatorStateProto (aggregator.proto:164-198).
+message AggregatorState {
+  optional int32 type = 1;              // AggregatorType; must be 112 (HYPERLOGLOG_PLUS_UNIQUE)
+  optional int64 num_values = 2;
+  optional int32 encoding_version = 3;  // absent means 1; only 2 is supported
+  optional int32 value_type = 4;
+  optional HllPlusUniqueState hyperloglogplus_unique_state = 112;
+}
+
+// Mirrors zetasketch.HyperLogLogPlusUniqueStateProto (hllplus-unique.proto:36-109).
+message HllPlusUniqueState {
+  optional int32 sparse_size = 2;
+  optional int32 precision_or_num_buckets = 3;
+  optional int32 sparse_precision_or_num_buckets = 4;
+  optional bytes data = 5;
+  optional bytes sparse_data = 6;
+}

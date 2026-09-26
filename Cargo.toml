@@ -1,0 +1,30 @@
+[package]
+name = "zetasketch-clickhouse"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+description = "Converts Google ZetaSketch HLL++ sketches (BigQuery HLL_COUNT) into ClickHouse uniqCombined64 aggregate-function states"
+repository = "https://github.com/rilldata/zetasketch-clickhouse"
+publish = false
+
+[lib]
+name = "zetasketch_clickhouse"
+path = "src/lib.rs"
+
+[[bin]]
+name = "zetasketch-clickhouse"
+path = "src/main.rs"
+
+[dependencies]
+prost = "0.13"
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+
+[build-dependencies]
+prost-build = "0.13"
+
+[profile.release]
+# The UDF binary is throughput-critical: it is spawned once per pooled worker
+# and then converts every migrated sketch row.
+lto = "thin"
+codegen-units = 1

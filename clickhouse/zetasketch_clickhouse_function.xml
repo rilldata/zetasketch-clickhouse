@@ -1,0 +1,34 @@
+<!--
+  ClickHouse executable UDF registration.
+
+  Install as /etc/clickhouse-server/zetasketch_clickhouse_function.xml, i.e.
+  directly in the config directory and NOT under config.d/. The server finds
+  these files with the user_defined_executable_functions_config glob (default
+  *_function.*ml) and parses each one standalone, so the root element is
+  <functions> rather than <clickhouse><functions>.
+
+  <command> is resolved relative to user_scripts_path (default
+  /var/lib/clickhouse/user_scripts/), so the binary has to live there; an
+  absolute path is rejected. The precision passed on the command line must
+  match the one in <return_type>. See docs/deployment.md.
+
+  (Note for editors: XML forbids a double hyphen inside a comment, so spell
+  command-line flags out in prose here rather than pasting them.)
+-->
+<functions>
+  <function>
+    <type>executable_pool</type>
+    <name>zetasketch_to_uniq_combined64_p15</name>
+    <return_type>AggregateFunction(uniqCombined64(15), UInt64)</return_type>
+    <argument>
+      <type>String</type>
+      <name>sketch_bytes</name>
+    </argument>
+    <format>RowBinary</format>
+    <command>zetasketch-clickhouse --precision 15 --format row-binary</command>
+    <pool_size>8</pool_size>
+    <lifetime>0</lifetime>
+    <send_chunk_header>true</send_chunk_header>
+    <max_command_execution_time>30</max_command_execution_time>
+  </function>
+</functions>
